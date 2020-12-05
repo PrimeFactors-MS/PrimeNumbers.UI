@@ -1,0 +1,40 @@
+﻿apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  labels:
+    app: frontend-service
+    project: prime-numbers
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 30004
+    targetPort: 80
+    nodePort: 30014
+  selector:
+    app: frontend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+        project: prime-numbers
+    spec:
+      containers:
+      - name: frontend
+        image: frontend:v1
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
