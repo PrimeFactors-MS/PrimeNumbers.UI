@@ -30,6 +30,12 @@ namespace PrimeNumbers.UI.Web.Controllers
         [HttpPost]
         public async Task<PrimeCheckResponse> CheckPrime([FromBody] PrimeCheckRequest primeCheckRequest)
         {
+            PrimeCheckResponse dbResponse = await GetPrimesFromDb(primeCheckRequest);
+            if (dbResponse != null)
+            {
+                return dbResponse;
+            }
+
             try
             {
                 return await GetPrimesFromApi(primeCheckRequest);
@@ -56,6 +62,30 @@ namespace PrimeNumbers.UI.Web.Controllers
                 Stream responseBody = await response.Content.ReadAsStreamAsync();
                 PrimeCheckApiResponse result = await TextJson.JsonSerializer.DeserializeAsync<PrimeCheckApiResponse>(responseBody);
                 return new PrimeCheckResponse { IsPrime = result.IsPrime, Primes = result.Primes };
+            }
+            else
+            {
+                throw new Exception($"Api server returned {response.StatusCode.ToString()}");
+            }
+        }
+
+        private async Task<PrimeCheckResponse> GetPrimesFromDb(PrimeCheckRequest request)
+        {
+            HttpClient client = new HttpClient()
+            {
+                BaseAddress = new Uri("http://192.168.1.18:30006")
+            };
+            HttpResponseMessage response = await client.GetAsync($"Primes?number={request.Number}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                Stream responseBody = await response.Content.ReadAsStreamAsync();
+                PrimeDbRecord result = await TextJson.JsonSerializer.DeserializeAsync<PrimeDbRecord>(responseBody);
+                return new PrimeCheckResponse { IsPrime = result.IsPrime, Primes = result.PrimeFactors };
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
             }
             else
             {
