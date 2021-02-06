@@ -53,7 +53,7 @@ namespace PrimeNumbers.UI.Web.Controllers
         {
             HttpClient client = new HttpClient()
             {
-                BaseAddress = new Uri("http://192.168.1.18:30005")
+                BaseAddress = new Uri("http://on-demand-finder-service:30005")
             };
             HttpResponseMessage response = await client.GetAsync($"OnDemandPrime?Number={request.Number}");
 
@@ -73,7 +73,7 @@ namespace PrimeNumbers.UI.Web.Controllers
         {
             HttpClient client = new HttpClient()
             {
-                BaseAddress = new Uri("http://192.168.1.18:30006")
+                BaseAddress = new Uri("http://primes-db-service:30006")
             };
             HttpResponseMessage response = await client.GetAsync($"Primes?number={request.Number}");
 
